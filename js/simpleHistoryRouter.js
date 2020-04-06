@@ -2,47 +2,39 @@
  * Created by Stefan Korecko, 2020
  */
 
-//an array, defining the routes
-const routes = [
-  {
-    hash: "main", //the part after '#' in the url (so-called anchor)
-    target: "router-view", //id of the target html element
-    content: "<h1>Main Content</h1>" //the content to be rendered to the target html element
-  },
-
-  {
-    hash: "about",
-    target: "router-view",
-    content: "<h1>About page</h1>"
-  }
-];
-
-/**
- * Does the routing as defined by the routes array
- * @param routes - the routes array, an array of objects with the properties hash, target and content
- */
-function doRouting(routes) {
-  let hash = window.location.hash;
-
-  if (hash) {
-    hash = hash[0] === "#" ? hash.substr(1) : hash;
-    const matchingRoute = routes.find(route => route.hash === hash);
-
-    if (matchingRoute) {
-      document.getElementById(matchingRoute.target).innerHTML =
-        matchingRoute.content;
-    }
-
+export default class SimpleHistoryRouter {
+  constructor(routes) {
+    this.routes = routes;
+    window.addEventListener("popstate", event => this.doRouting(event));
     /*
-      here we do nothing if the matching route is not found.
-      This allows other fragments that we do not want to be  processed by the router to work as usual.
-      Otherwise ()
-     */
+    one may think that it will be better to add the listener as
+    window.addEventListener("popstate", this.doRouting);
+    However, then inside the corresponding doRouting call the 
+    this will point to window and not to SimpleHistoryRouter instance. 
+    */
+
+    this.loadRoute("");
+  }
+
+  loadRoute(path) {
+    window.history.pushState({}, "", "/" + path);
+    this.doRouting();
+  }
+
+  /**
+   * Does the routing as defined by the routes array
+   */
+  doRouting() {
+    let path = window.location.pathname;
+
+    if (path) {
+      path = path[0] === "/" ? path.substr(1) : path;
+      const matchingRoute = this.routes.find(route => route.path === path);
+
+      if (matchingRoute) {
+        document.getElementById(matchingRoute.target).innerHTML =
+          matchingRoute.content;
+      }
+    }
   }
 }
-
-function onRouteChanged() {
-  doRouting(routes);
-}
-
-window.addEventListener("hashchange", onRouteChanged);
