@@ -1,2 +1,0 @@
-# simpleHistoryRouter
-Created with CodeSandbox
